@@ -45,7 +45,7 @@ setup(
     entry_points={},
     include_package_data=True,
     setup_requires='pytest-runner',
-    tests_require=required('test-requirements.txt'),
+    tests_require='pytest',
     install_requires=required('requirements.txt'),
     test_suite='pytest',
     zip_safe=False,
