@@ -5,76 +5,17 @@ Provides the main ZigBee class of the project and contains various constants
 and utility functions to support it.
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import sleep
 from sys import version_info
 
 from xbee import ZigBee as ZigBeeDevice
 
 from xbee_helper import exceptions
+from xbee_helper import const
 
 
 _LOGGER = logging.getLogger(__name__)
-RX_TIMEOUT = timedelta(seconds=10)
-
-# @TODO: Split these out to a separate module containing the
-#        specifics for each type of XBee module. (This is Series 2 non-pro)
-DIGITAL_PINS = (
-    "dio-0", "dio-1", "dio-2",
-    "dio-3", "dio-4", "dio-5",
-    "dio-10", "dio-11", "dio-12"
-)
-ANALOG_PINS = (
-    "adc-0", "adc-1", "adc-2", "adc-3"
-)
-IO_PIN_COMMANDS = (
-    b"D0", b"D1", b"D2",
-    b"D3", b"D4", b"D5",
-    b"P0", b"P1", b"P2"
-)
-ADC_MAX_VAL = 1023
-
-
-class GPIOSetting:
-    """
-    Class to contain a human readable name and byte value of a GPIO setting.
-    """
-    def __init__(self, name, value):
-        self._name = name
-        self._value = value
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def name(self):
-        """
-        Human readable name for the GPIO setting.
-        """
-        return self._name
-
-    @property
-    def value(self):
-        """
-        Byte value of the GPIO setting.
-        """
-        return self._value
-
-
-GPIO_DISABLED = GPIOSetting("DISABLED", b"\x00")
-GPIO_STANDARD_FUNC = GPIOSetting("STANDARD_FUNC", b"\x01")
-GPIO_ADC = GPIOSetting("ADC", b"\x02")
-GPIO_DIGITAL_INPUT = GPIOSetting("DIGITAL_INPUT", b"\x03")
-GPIO_DIGITAL_OUTPUT_LOW = GPIOSetting("DIGITAL_OUTPUT_LOW", b"\x04")
-GPIO_DIGITAL_OUTPUT_HIGH = GPIOSetting("DIGITAL_OUTPUT_HIGH", b"\x05")
-GPIO_SETTINGS = {
-    GPIO_DISABLED.value: GPIO_DISABLED,
-    GPIO_STANDARD_FUNC.value: GPIO_STANDARD_FUNC,
-    GPIO_ADC.value: GPIO_ADC,
-    GPIO_DIGITAL_INPUT.value: GPIO_DIGITAL_INPUT,
-    GPIO_DIGITAL_OUTPUT_LOW.value: GPIO_DIGITAL_OUTPUT_LOW,
-    GPIO_DIGITAL_OUTPUT_HIGH.value: GPIO_DIGITAL_OUTPUT_HIGH
-}
 
 
 def raise_if_error(frame):
@@ -162,7 +103,7 @@ class ZigBee(object):
         frame_id = self.next_frame_id
         kwargs.update(dict(frame_id=frame_id))
         self._send(**kwargs)
-        timeout = datetime.now() + RX_TIMEOUT
+        timeout = datetime.now() + const.RX_TIMEOUT
         while datetime.now() < timeout:
             try:
                 frame = self._rx_frames.pop(frame_id)
@@ -201,11 +142,11 @@ class ZigBee(object):
         """
         sample = self.get_sample(dest_addr_long=dest_addr_long)
         try:
-            return sample[DIGITAL_PINS[pin_number]]
+            return sample[const.DIGITAL_PINS[pin_number]]
         except KeyError:
             raise exceptions.ZigBeePinNotConfigured(
                 "Pin %s (%s) is not configured as a digital input or output."
-                % (pin_number, IO_PIN_COMMANDS[pin_number]))
+                % (pin_number, const.IO_PIN_COMMANDS[pin_number]))
 
     def read_analog_pin(self, pin_number, dest_addr_long=None):
         """
@@ -214,19 +155,19 @@ class ZigBee(object):
         """
         sample = self.get_sample(dest_addr_long=dest_addr_long)
         try:
-            return sample[ANALOG_PINS[pin_number]]
+            return sample[const.ANALOG_PINS[pin_number]]
         except KeyError:
             raise exceptions.ZigBeePinNotConfigured(
                 "Pin %s (%s) is not configured as an analog input." % (
-                    pin_number, IO_PIN_COMMANDS[pin_number]))
+                    pin_number, const.IO_PIN_COMMANDS[pin_number]))
 
     def set_gpio_pin(self, pin_number, setting, dest_addr_long=None):
         """
         Set a gpio pin setting.
         """
-        assert setting in GPIO_SETTINGS.values()
+        assert setting in const.GPIO_SETTINGS.values()
         self._send_and_wait(
-            command=IO_PIN_COMMANDS[pin_number],
+            command=const.IO_PIN_COMMANDS[pin_number],
             parameter=setting.value,
             dest_addr_long=dest_addr_long)
 
@@ -235,9 +176,11 @@ class ZigBee(object):
         Get a gpio pin setting.
         """
         frame = self._send_and_wait(
-            command=IO_PIN_COMMANDS[pin_number], dest_addr_long=dest_addr_long)
+            command=const.IO_PIN_COMMANDS[pin_number],
+            dest_addr_long=dest_addr_long
+        )
         value = frame["parameter"]
-        return GPIO_SETTINGS[value]
+        return const.GPIO_SETTINGS[value]
 
     def get_supply_voltage(self, dest_addr_long=None):
         """
