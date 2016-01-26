@@ -1,6 +1,6 @@
 import pytest
 
-from xbee_helper import device, exceptions, ZigBee
+from xbee_helper import device, exceptions
 
 
 def test_raise_if_error_no_status():
