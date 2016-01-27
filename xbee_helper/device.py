@@ -48,7 +48,7 @@ def hex_to_int(value):
     return int(value.encode("hex"), 16)
 
 
-def adc_to_percentage(value, clamp=True):
+def adc_to_percentage(value, max_volts, clamp=True):
     """
     Convert the ADC raw value to a percentage.
     """
@@ -56,21 +56,21 @@ def adc_to_percentage(value, clamp=True):
     return max(min(100, percentage), 0) if clamp else percentage
 
 
-def adc_to_volts(value):
+def adc_to_volts(value, max_volts):
     """
     Convert the ADC raw value to Volts.
     """
-    return (float(MAX_VOLTAGE) / const.ADC_MAX_VAL) * value
+    return (float(max_volts) / const.ADC_MAX_VAL) * value
 
 
-def adc_to_millivolts(value):
+def adc_to_millivolts(value, max_volts):
     """
     Convert the ADC raw value to Millivolts
     """
-    return int(adc_to_volts(value) * 1000)
+    return int(adc_to_volts(value, max_volts) * 1000)
 
 
-def convert_adc(value, output_type):
+def convert_adc(value, output_type, max_volts):
     """
     Converts the output from the ADC into the desired type.
     """
@@ -79,7 +79,7 @@ def convert_adc(value, output_type):
         const.ADC_PERCENTAGE: adc_to_percentage,
         const.ADC_VOLTS: adc_to_volts,
         const.ADC_MILLIVOLTS: adc_to_millivolts
-    }[output_type](value)
+    }[output_type](value, max_volts)
 
 
 class ZigBee(object):
@@ -187,7 +187,8 @@ class ZigBee(object):
                 % (pin_number, const.IO_PIN_COMMANDS[pin_number]))
 
     def read_analog_pin(
-            self, pin_number, dest_addr_long=None, output_type=const.ADC_RAW):
+            self, pin_number, adc_max_volts,
+            dest_addr_long=None, output_type=const.ADC_RAW):
         """
         Fetches a sample and returns the integer value of the requested analog
         pin. output_type should be one of the following constants from
@@ -200,7 +201,10 @@ class ZigBee(object):
         sample = self.get_sample(dest_addr_long=dest_addr_long)
         try:
             return convert_adc(
-                sample[const.ANALOG_PINS[pin_number]], output_type)
+                sample[const.ANALOG_PINS[pin_number]],
+                output_type,
+                adc_max_volts
+            )
         except KeyError:
             raise exceptions.ZigBeePinNotConfigured(
                 "Pin %s (%s) is not configured as an analog input." % (
