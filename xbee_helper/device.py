@@ -8,7 +8,6 @@ import logging
 from datetime import datetime
 from time import sleep
 from sys import version_info
-from multiprocessing import Lock
 
 from xbee import ZigBee as ZigBeeDevice
 
@@ -89,7 +88,6 @@ class ZigBee(object):
     """
     _rx_frames = {}
     _frame_id = 1
-    _lock = Lock()
 
     def __init__(self, ser):
         self._ser = ser
@@ -142,17 +140,16 @@ class ZigBee(object):
         """
         frame_id = self.next_frame_id
         kwargs.update(dict(frame_id=frame_id))
-        with self._lock:
-            self._send(**kwargs)
-            timeout = datetime.now() + const.RX_TIMEOUT
-            while datetime.now() < timeout:
-                try:
-                    frame = self._rx_frames.pop(frame_id)
-                    raise_if_error(frame)
-                    return frame
-                except KeyError:
-                    sleep(0.1)
-                    continue
+        self._send(**kwargs)
+        timeout = datetime.now() + const.RX_TIMEOUT
+        while datetime.now() < timeout:
+            try:
+                frame = self._rx_frames.pop(frame_id)
+                raise_if_error(frame)
+                return frame
+            except KeyError:
+                sleep(0.1)
+                continue
         _LOGGER.exception(
             "Did not receive response within configured timeout period.")
         raise exceptions.ZigBeeResponseTimeout()
