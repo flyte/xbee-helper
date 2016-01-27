@@ -11,16 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: xbee_helper
-
-.. autoclass:: ZigBee
-    :members:
-
-
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

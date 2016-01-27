@@ -85,6 +85,11 @@ def convert_adc(value, output_type, max_volts):
 class ZigBee(object):
     """
     Adds convenience methods for a ZigBee.
+
+    Most of the methods take a `dest_addr_long` parameter. If provided, this
+    is used to send a remote AT command to a device on the ZigBee network. If
+    the parameter is not provided, then an AT command will be sent to the
+    local device on the serial port.
     """
     _rx_frames = {}
     _frame_id = 1
