@@ -24,6 +24,10 @@ IO_PIN_COMMANDS = (
     b"P0", b"P1", b"P2"
 )
 ADC_MAX_VAL = 1023
+ADC_RAW = 0
+ADC_PERCENTAGE = 1
+ADC_VOLTS = 2
+ADC_MILLIVOLTS = 3
 
 
 class GPIOSetting(object):
