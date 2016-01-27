@@ -193,6 +193,7 @@ class ZigBee(object):
         Fetches a sample and returns the integer value of the requested analog
         pin. output_type should be one of the following constants from
         xbee_helper.const:
+
         - ADC_RAW
         - ADC_PERCENTAGE
         - ADC_VOLTS

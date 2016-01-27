@@ -11,6 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+.. automodule:: xbee_helper
+
+.. autoclass:: ZigBee
+    :members:
 
 
 Indices and tables
