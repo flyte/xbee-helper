@@ -257,3 +257,10 @@ class ZigBee(object):
         """
         return hex_to_int(self._get_parameter(
             b"TP", dest_addr_long=dest_addr_long))
+
+    def get_temperature_fahrenheit(self, dest_addr_long=None):
+        """
+        Fetches and returns the degrees Fahrenheit value measured by the XBee
+        Pro module.
+        """
+        return ((self.get_temperature(dest_addr_long) * 9) / 5) + 32
