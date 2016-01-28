@@ -263,4 +263,4 @@ class ZigBee(object):
         Fetches and returns the degrees Fahrenheit value measured by the XBee
         Pro module.
         """
-        return ((self.get_temperature(dest_addr_long) * 9) / 5) + 32
+        return int(((self.get_temperature(dest_addr_long) * 9.0) / 5) + 32)
