@@ -41,7 +41,7 @@ def raise_if_error(frame):
 
 def hex_to_int(value):
     """
-    Convert hex string like "AE3" to 2787.
+    Convert hex string like "\x0A\xE3" to 2787.
     """
     if version_info.major >= 3:
         return int.from_bytes(value, "big")
@@ -92,6 +92,7 @@ class ZigBee(object):
     local device on the serial port.
     """
     _rx_frames = {}
+    _rx_handlers = []
     _frame_id = 1
 
     def __init__(self, ser):
@@ -128,6 +129,9 @@ class ZigBee(object):
             # Has no frame_id, ignore?
             pass
         _LOGGER.debug("Frame received: %s", frame)
+        # Give the frame to any interested functions
+        for handler in self._rx_handlers:
+            handler(frame)
 
     def _send(self, **kwargs):
         """
@@ -166,6 +170,20 @@ class ZigBee(object):
         frame = self._send_and_wait(
             command=parameter, dest_addr_long=dest_addr_long)
         return frame["parameter"]
+
+    def add_frame_rx_handler(self, handler):
+        """
+        Adds a function to the list of functions which will be called when a
+        frame is received.
+        """
+        self._rx_handlers.append(handler)
+
+    def remove_frame_rx_handler(self, handler):
+        """
+        Removes a function from the list of functions which will be called when
+        a frame is received.
+        """
+        self._rx_handlers.remove(handler)
 
     def get_sample(self, dest_addr_long=None):
         """
